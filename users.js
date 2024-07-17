@@ -1,35 +1,30 @@
+import express from 'express';
+import { getUsers, getJwt } from '/models/users.js';
+const router = express.Router();
 
-import mongoose from 'mongoose'
-import crypto from 'crypto'
-let usersSchema=mongoose.Schema({
-_id: {
-    type: ObjectId,
-},
-email:{
-    type: String,
-},
-name:{
-    type: String,
-    required:true,
+router.get('/', (req, res) => {
+    getUsers((err, users) => {
+        if (err) {
+            throw err;
+        }
+        res.json(users);
+    });
+});
 
-},
-paasword:{
-    type: String,
-},
-jwt:{
-    type: String,
-},
+router.post('/login', (req, res) => {
+    const data = req.body;
+    getJwt(data, (err, user) => {
+        if (err) {
+            throw err;
+        }
+        if (user) {
+            res.json(user);
+        } else {
+            res.status(400).send('Authentication error');
+        }
+    });
+});
 
-})
 
-const Users=mongoose.model('Users', usersSchema)
 
-//összes felhasználó  lekérése
-const getUsers=(callback, limit) =>Users.find(callback).limit(limit)
- const getJwt=(data, callback) => Users.findOne({
-    email: data.email,
-    password: crypto.createHash('md5').update(data.password).digest('hex'),
- }, callback)
-
- const validateJwt=(jwt, callback) =>Users.findOne({jwt:jwt}, callback)
-export  {getUsers, getJwt, validateJwt}
+export default router;

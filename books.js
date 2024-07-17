@@ -1,37 +1,23 @@
-import mongoose from 'mongoose';
-import { ObjectId } from 'mongodb';
-let booksSchema=mongoose.Schema({
-    _id: {
-        type: ObjectId,
-    },
-    author: {
-        type: String,
-    },
-    title: {
-        type: String,
-        required: true,
-    },
-    type: {
-        type: String,
-    },
-    year: {
-        type: String,
-    }
-});
 
-const Books = mongoose.model('Books', booksSchema);
+import express from 'express';
+import {addBook, getBooks} from '../models/books.js';
+const router = express.Router();
 
-// Összes könyv lekérése
-const getBooks = (callback, limit) => Books.find(callback).limit(limit);
-
-const addBook=(data, callback) =>{
-    const book =new Books({
-        _id:new Date().getTime(),
-        author: data.author,
-        title: data.title,
-        type: data.type,
-        year: data.year
+router.get('/', (req, res) => {
+    getBooks((err, books) =>{
+        if(err){
+            throw err
+        }
+        res.json(books)
     })
-    book.save(callback)
-}
-export  {addBook, getBooks };
+});
+router.post('/',( req, res) =>{
+    const data=req.body
+    addBook(data, (err, book) =>{
+        if(err){
+            throw err
+        }
+        res.json(book)
+    })
+})
+export default router;
